@@ -24,7 +24,7 @@ const menuItems = [
   { label: "Home", icon: <Home className="w-4 h-4" />, href: "/dashboard/home" },
   { label: "Inbox", icon: <Mail className="w-4 h-4" />, href: "/dashboard/inbox" },
   { label: "Projects", icon: <Folder className="w-4 h-4" />, href: "/dashboard/projects" },
-  { label: "Tasks", icon: <List className="w-4 h-4" />, href: "/dashboard/tasks" },
+  { label: "Tasks", icon: <List className="w-4 h-4" />, href: "/dashboard/AdTask" },
   { label: "Members", icon: <Users className="w-4 h-4" />, href: "/dashboard/members" },
 ];
 
