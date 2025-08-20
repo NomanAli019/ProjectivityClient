@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Menu } from "lucide-react";
-import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp"; // 👈 import popup
 
 type HeaderProps = {
   username: string;
   onMenuClick: () => void;
 };
 
-export default function Header({ username, onMenuClick }: HeaderProps) {
-  const [showPopup, setShowPopup] = useState(false);
-
+export default function EmployeeHeader({ username, onMenuClick }: HeaderProps) {
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
       {/* Left - Greeting */}
@@ -31,24 +27,8 @@ export default function Header({ username, onMenuClick }: HeaderProps) {
         />
       </div>
 
-      {/* Right - Buttons + Avatar */}
+      {/* Right - Avatar + Mobile menu */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* ✅ New Project Button shows popup */}
-        <button
-          onClick={() => setShowPopup(true)}
-          className="border border-[#01D0FF] text-[#01D0FF] px-3 py-1 rounded-[20px] 
-                     hover:bg-[#01D0FF0F] transition duration-200"
-        >
-          + New Project
-        </button>
-
-        {/* Create Task Button */}
-        <button className="border border-[#BC73F9] text-[#BC73F9] px-3 py-1 rounded-[20px] 
-                           hover:bg-[#BC73F90F] transition duration-200"
-        >
-          + Create Task
-        </button>
-
         {/* Avatar Placeholder */}
         <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
 
@@ -60,9 +40,6 @@ export default function Header({ username, onMenuClick }: HeaderProps) {
           <Menu className="w-6 h-6" />
         </button>
       </div>
-
-      {/* ✅ Popup Render */}
-      {showPopup && <CreateProjectPopup onClose={() => setShowPopup(false)} />}
     </div>
   );
 }

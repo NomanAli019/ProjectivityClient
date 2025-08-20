@@ -2,11 +2,7 @@
 
 import {
   Home,
-  Mail,
-  Folder,
   List,
-  Users,
-  PlusCircle,
   Settings,
   MessageSquare,
   LogOut,
@@ -22,20 +18,17 @@ type Props = {
 };
 
 const menuItems = [
-  { label: "Home", icon: <Home className="w-4 h-4" />, href: "/dashboard/home" },
-  { label: "Inbox", icon: <Mail className="w-4 h-4" />, href: "/dashboard/inbox" },
-  { label: "Projects", icon: <Folder className="w-4 h-4" />, href: "/dashboard/projects" },
-  { label: "Tasks", icon: <List className="w-4 h-4" />, href: "/dashboard/AdTask" },
-  { label: "Members", icon: <Users className="w-4 h-4" />, href: "/dashboard/members" },
+  { label: "Home", icon: <Home className="w-4 h-4" />, href: "/employeedashboard/home" },
+  { label: "Tasks", icon: <List className="w-4 h-4" />, href: "/employeedashboard/task" },
 ];
 
-export default function Sidebar({ isOpen, onClose }: Props) {
+export default function EmployeeSidebar({ isOpen, onClose }: Props) {
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
     // 👇 here you can clear auth, cookies, localstorage etc.
-    window.location.href = "/logout"; 
+    window.location.href = "/logout";
   };
 
   return (
@@ -68,12 +61,6 @@ export default function Sidebar({ isOpen, onClose }: Props) {
           </button>
         </div>
 
-        {/* Create Button */}
-        <button className="flex items-center gap-2 text-sm font-medium bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md mb-6">
-          <PlusCircle className="w-4 h-4" />
-          Create
-        </button>
-
         {/* Main Menu */}
         <nav className="flex flex-col gap-2 mb-6">
           {menuItems.map((item) => {
@@ -100,9 +87,9 @@ export default function Sidebar({ isOpen, onClose }: Props) {
         {/* Bottom links */}
         <div className="mt-auto flex flex-col gap-2 text-sm">
           <Link
-            href="/dashboard/settings"
+            href="/employee/settings"
             className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-              pathname === "/dashboard/settings"
+              pathname === "/employee/settings"
                 ? "bg-black text-white"
                 : "text-black hover:bg-black/10"
             }`}
@@ -111,9 +98,9 @@ export default function Sidebar({ isOpen, onClose }: Props) {
             Settings
           </Link>
           <Link
-            href="/dashboard/feedback"
+            href="/employee/feedback"
             className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-              pathname === "/dashboard/feedback"
+              pathname === "/employee/feedback"
                 ? "bg-black text-white"
                 : "text-black hover:bg-black/10"
             }`}
