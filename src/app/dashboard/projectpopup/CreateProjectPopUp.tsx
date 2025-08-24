@@ -15,6 +15,7 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
   const [deadline, setDeadline] = useState("");
   const [budget, setBudget] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -22,17 +23,45 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({
-      title,
-      description,
-      startDate,
-      deadline,
-      budget,
-      attachments,
-    });
-    onClose();
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("project_title", title);
+      formData.append("description", description);
+      formData.append("start_date", startDate);
+      formData.append("end_date", deadline);
+      formData.append("budget", budget);
+      formData.append("admin_id", "1"); // TODO: replace with real session admin_id
+
+      attachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
+
+      // ✅ Call Flask via Next.js proxy (rewrites handles the 127.0.0.1 mapping)
+      const res = await fetch("/api/adminenterproject", {
+        method: "POST",
+        body: formData,
+        credentials: "include", // 👈 keep session cookies
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ Project created successfully!");
+        console.log("Response:", data);
+        onClose();
+      } else {
+        alert("❌ Failed: " + (data.message || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Error creating project:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,6 +110,7 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
                   placeholder="Enter project title"
+                  required
                 />
               </div>
 
@@ -95,6 +125,7 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                    required
                   />
                 </div>
                 <div>
@@ -135,15 +166,15 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
                 />
               </div>
 
-              {/* Attachments */}
+              {/* Attachments (PDF only) */}
               <div>
                 <label className="block text-xs text-gray-500 mb-2">
-                  Attachments
+                  Attachment (PDF only)
                 </label>
                 <div className="border border-dashed border-gray-300 rounded-md p-5 text-center hover:border-blue-400 transition">
                   <input
                     type="file"
-                    multiple
+                    accept="application/pdf"   // 👈 only PDFs
                     onChange={handleFileChange}
                     className="hidden"
                     id="fileUpload"
@@ -153,24 +184,24 @@ export default function CreateProjectPopup({ onClose }: CreateProjectPopupProps)
                     className="cursor-pointer flex flex-col items-center text-gray-500"
                   >
                     <Upload size={22} className="mb-1" />
-                    <span className="text-xs">Click to upload files</span>
+                    <span className="text-xs">Click to upload PDF</span>
                   </label>
                   {attachments.length > 0 && (
                     <ul className="mt-3 text-xs text-gray-600 text-left">
-                      {attachments.map((file, index) => (
-                        <li key={index}>📎 {file.name}</li>
-                      ))}
+                      <li>📎 {attachments[0].name}</li>
                     </ul>
                   )}
                 </div>
               </div>
 
+
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full py-2.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm font-medium"
+                disabled={loading}
+                className="w-full py-2.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm font-medium disabled:opacity-50"
               >
-                Create Project
+                {loading ? "Creating..." : "Create Project"}
               </button>
             </form>
           </div>

@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Props = {
@@ -31,11 +31,33 @@ const menuItems = [
 
 export default function Sidebar({ isOpen, onClose }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogout = () => {
-    // 👇 here you can clear auth, cookies, localstorage etc.
-    window.location.href = "/logout"; 
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      // ✅ Call through Next.js proxy → Flask backend
+      const res = await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "include", // ensure session cookie is cleared
+      });
+
+      const data = await res.json();
+      console.log("Logout response:", data);
+
+      if (res.ok) {
+        router.push("/login"); // redirect to login
+      } else {
+        alert(data.message || "Logout failed");
+      }
+    } catch (err) {
+      console.error("Error during logout:", err);
+      alert("Something went wrong while logging out.");
+    }
+    setLoading(false);
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -145,14 +167,16 @@ export default function Sidebar({ isOpen, onClose }: Props) {
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="px-4 py-2 text-sm rounded-md border border-gray-300 hover:bg-gray-100"
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm rounded-md bg-red-500 hover:bg-red-600 text-white"
+                className="px-4 py-2 text-sm rounded-md bg-red-500 hover:bg-red-600 text-white disabled:opacity-50"
+                disabled={loading}
               >
-                Logout
+                {loading ? "Logging out..." : "Logout"}
               </button>
             </div>
           </div>
