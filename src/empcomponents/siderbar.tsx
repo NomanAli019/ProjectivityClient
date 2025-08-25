@@ -26,9 +26,24 @@ export default function EmployeeSidebar({ isOpen, onClose }: Props) {
   const pathname = usePathname();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleLogout = () => {
-    // 👇 here you can clear auth, cookies, localstorage etc.
-    window.location.href = "/logout";
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/employee/logout", {
+        method: "POST",
+        credentials: "include", // 👈 ensures Flask session cookie is cleared
+      });
+
+      if (res.ok) {
+        // ✅ Redirect to employee login after logout
+        window.location.href = "/emplogin";
+      } else {
+        const data = await res.json();
+        alert(data.message || "Logout failed");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (

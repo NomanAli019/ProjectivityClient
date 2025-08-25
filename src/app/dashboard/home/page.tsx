@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -29,6 +29,37 @@ const data = [
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ✅ State for projects
+  const [projects, setProjects] = useState<string[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("");
+
+  // ✅ Fetch all projects on load
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch("/getallprojectsdata", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (res.ok) {
+          const result = await res.json();
+          // assuming API returns like: { projects: ["Handymanfast", "ProjectX"] }
+          const projectNames = result.projects || [];
+          setProjects(projectNames);
+          if (projectNames.length > 0) {
+            setSelectedProject(projectNames[0]); // default to first project
+          }
+        } else {
+          console.error("Failed to fetch projects");
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   return (
     <div className="min-h-screen flex bg-white text-black font-sans">
@@ -66,12 +97,14 @@ export default function Dashboard() {
             <h3 className="font-medium">Project:</h3>
             <select
               className="bg-transparent font-semibold text-black cursor-pointer focus:outline-none"
-              defaultValue="Handymanfast"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
             >
-              <option value="Handymanfast">Handymanfast</option>
-              <option value="ProjectX">ProjectX</option>
-              <option value="AppTracker">AppTracker</option>
-              <option value="Buildify">Buildify</option>
+              {projects.map((proj, idx) => (
+                <option key={idx} value={proj}>
+                  {proj}
+                </option>
+              ))}
             </select>
             <span className="font-bold">- Completed Tasks Overview</span>
           </div>
@@ -94,12 +127,14 @@ export default function Dashboard() {
             Team{" "}
             <select
               className="bg-transparent font-semibold text-black cursor-pointer focus:outline-none"
-              defaultValue="Handymanfast"
+              value={selectedProject}
+              onChange={(e) => setSelectedProject(e.target.value)}
             >
-              <option value="Handymanfast">Handymanfast</option>
-              <option value="ProjectX">ProjectX</option>
-              <option value="AppTracker">AppTracker</option>
-              <option value="Buildify">Buildify</option>
+              {projects.map((proj, idx) => (
+                <option key={idx} value={proj}>
+                  {proj}
+                </option>
+              ))}
             </select>
           </h3>
 
