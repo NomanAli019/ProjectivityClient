@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MoreVertical } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -28,94 +28,40 @@ interface Project {
   progressStatus: string;
 }
 
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "Handymanfast",
-    description:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium...",
-    members: 14,
-    membersList: [
-      { name: "Muhammad Jazib", role: "Frontend", joined: "7 July 2025" },
-      { name: "Basit Ijaz", role: "Backend", joined: "7 July 2025" },
-      { name: "Haya Fatima", role: "Unit Testing", joined: "28 July 2025" },
-      { name: "Sara Fatima", role: "UI & UX", joined: "1 July 2025" },
-    ],
-    totalTasks: 200,
-    completedTasks: 94,
-    inProgressTasks: 16,
-    remainingTasks: 90,
-    projectCreated: "1 July 2025",
-    deadline: "24 Feb 2026",
-    progressStatus: "Good",
-  },
-  {
-    id: 2,
-    title: "Handymanfast",
-    description:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium...",
-    members: 14,
-    membersList: [
-      { name: "Muhammad Jazib", role: "Frontend", joined: "7 July 2025" },
-      { name: "Basit Ijaz", role: "Backend", joined: "7 July 2025" },
-      { name: "Haya Fatima", role: "Unit Testing", joined: "28 July 2025" },
-      { name: "Sara Fatima", role: "UI & UX", joined: "1 July 2025" },
-    ],
-    totalTasks: 200,
-    completedTasks: 94,
-    inProgressTasks: 16,
-    remainingTasks: 90,
-    projectCreated: "1 July 2025",
-    deadline: "24 Feb 2026",
-    progressStatus: "Good",
-  },
-  {
-    id: 3,
-    title: "Handymanfast",
-    description:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium...",
-    members: 14,
-    membersList: [
-      { name: "Muhammad Jazib", role: "Frontend", joined: "7 July 2025" },
-      { name: "Basit Ijaz", role: "Backend", joined: "7 July 2025" },
-      { name: "Haya Fatima", role: "Unit Testing", joined: "28 July 2025" },
-      { name: "Sara Fatima", role: "UI & UX", joined: "1 July 2025" },
-    ],
-    totalTasks: 200,
-    completedTasks: 94,
-    inProgressTasks: 16,
-    remainingTasks: 90,
-    projectCreated: "1 July 2025",
-    deadline: "24 Feb 2026",
-    progressStatus: "Good",
-  },
-  {
-    id: 4,
-    title: "Handymanfast",
-    description:
-      "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium...",
-    members: 14,
-    membersList: [
-      { name: "Muhammad Jazib", role: "Frontend", joined: "7 July 2025" },
-      { name: "Basit Ijaz", role: "Backend", joined: "7 July 2025" },
-      { name: "Haya Fatima", role: "Unit Testing", joined: "28 July 2025" },
-      { name: "Sara Fatima", role: "UI & UX", joined: "1 July 2025" },
-    ],
-    totalTasks: 200,
-    completedTasks: 94,
-    inProgressTasks: 16,
-    remainingTasks: 90,
-    projectCreated: "1 July 2025",
-    deadline: "24 Feb 2026",
-    progressStatus: "Good",
-  },
-];
-
 export default function ProjectsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  // ✅ Fetch projects dynamically
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch("/api/adminallprojects", {
+          method: "POST",
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProjects(data.projects || []);
+        } else {
+          console.error("❌ Failed to fetch projects");
+        }
+      } catch (err) {
+        console.error("❌ Error fetching projects:", err);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  // ✅ Placeholder for Add Members action
+  const handleAddMembers = (project: Project) => {
+    console.log("➕ Add Members clicked for project:", project.title);
+    // later you can open a popup here
+  };
 
   return (
     <div className="min-h-screen flex bg-white text-black font-sans">
@@ -168,6 +114,15 @@ export default function ProjectsPage() {
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                       >
                         Open Details
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleAddMembers(project);
+                          setMenuOpen(null);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      >
+                        Add Members
                       </button>
                     </div>
                   )}

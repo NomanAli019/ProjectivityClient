@@ -30,25 +30,26 @@ const data = [
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // ✅ State for projects
-  const [projects, setProjects] = useState<string[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string>("");
+  // ✅ Store projects & selected
+  const [projects, setProjects] = useState<any[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null
+  );
 
   // ✅ Fetch all projects on load
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch("/getallprojectsdata", {
-          method: "GET",
+        const res = await fetch("/api/getallprojectsdata", {
+          method: "POST", // backend expects POST
           credentials: "include",
         });
         if (res.ok) {
           const result = await res.json();
-          // assuming API returns like: { projects: ["Handymanfast", "ProjectX"] }
-          const projectNames = result.projects || [];
-          setProjects(projectNames);
-          if (projectNames.length > 0) {
-            setSelectedProject(projectNames[0]); // default to first project
+          const fetchedProjects = result.projects || [];
+          setProjects(fetchedProjects);
+          if (fetchedProjects.length > 0) {
+            setSelectedProjectId(fetchedProjects[0].project_id); // default to first
           }
         } else {
           console.error("Failed to fetch projects");
@@ -60,6 +61,11 @@ export default function Dashboard() {
 
     fetchProjects();
   }, []);
+
+  // ✅ Get currently selected project data
+  const selectedProject = projects.find(
+    (proj) => proj.project_id === selectedProjectId
+  );
 
   return (
     <div className="min-h-screen flex bg-white text-black font-sans">
@@ -97,12 +103,12 @@ export default function Dashboard() {
             <h3 className="font-medium">Project:</h3>
             <select
               className="bg-transparent font-semibold text-black cursor-pointer focus:outline-none"
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
+              value={selectedProjectId ?? ""}
+              onChange={(e) => setSelectedProjectId(Number(e.target.value))}
             >
-              {projects.map((proj, idx) => (
-                <option key={idx} value={proj}>
-                  {proj}
+              {projects.map((proj) => (
+                <option key={proj.project_id} value={proj.project_id}>
+                  {proj.project_name}
                 </option>
               ))}
             </select>
@@ -127,12 +133,12 @@ export default function Dashboard() {
             Team{" "}
             <select
               className="bg-transparent font-semibold text-black cursor-pointer focus:outline-none"
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
+              value={selectedProjectId ?? ""}
+              onChange={(e) => setSelectedProjectId(Number(e.target.value))}
             >
-              {projects.map((proj, idx) => (
-                <option key={idx} value={proj}>
-                  {proj}
+              {projects.map((proj) => (
+                <option key={proj.project_id} value={proj.project_id}>
+                  {proj.project_name}
                 </option>
               ))}
             </select>
@@ -157,29 +163,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {[
-                {
-                  name: "Muhammad Jazib",
-                  role: "Frontend",
-                  date: "7 July 2025",
-                  email: "mjxdex@gmail.com",
-                  status: "Invited",
-                },
-                {
-                  name: "Basit Isz",
-                  role: "Backend",
-                  date: "7 July 2025",
-                  email: "mjxdex@gmail.com",
-                  status: "Accepted",
-                },
-                {
-                  name: "Haya Fatima",
-                  role: "Unit Testing",
-                  date: "28 July 2025",
-                  email: "mjxdex@gmail.com",
-                  status: "Accepted",
-                },
-              ].map((member, idx) => (
+              {selectedProject?.employees?.map((member: any, idx: number) => (
                 <tr key={idx}>
                   <td className="bg-[#F5F5F5] px-3 py-2 rounded-md">
                     {member.name}
@@ -188,7 +172,7 @@ export default function Dashboard() {
                     {member.role}
                   </td>
                   <td className="bg-[#F5F5F5] px-3 py-2 rounded-md">
-                    {member.date}
+                    {member.added_date}
                   </td>
                   <td className="bg-[#F5F5F5] px-3 py-2 rounded-md">
                     {member.email}

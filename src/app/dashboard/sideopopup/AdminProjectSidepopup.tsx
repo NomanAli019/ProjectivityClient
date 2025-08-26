@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -8,6 +8,8 @@ interface Member {
   name: string;
   role: string;
   joined: string;
+  email?: string;
+  status?: string;
 }
 
 interface Project {
@@ -34,6 +36,8 @@ export default function AdminProjectSidepopup({
   project,
   onClose,
 }: AdminProjectSidepopupProps) {
+  const [members, setMembers] = useState<Member[]>([]);
+
   // Close popup on ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -43,12 +47,53 @@ export default function AdminProjectSidepopup({
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  if (!project) return null;
+  // Fetch employees for this project
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      if (!project) return;
+      try {
+        const res = await fetch("/api/getaprojectdata", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            project_id: project.id,
+            project_name: project.title,
+          }),
+        });
 
-  return (
-    <AnimatePresence>
-      {project && (
-        <>
+       if (res.ok) {
+          const data = await res.json();
+          // Backend returns a single project object with "employees"
+          if (data.employees) {
+            setMembers(
+              data.employees.map((emp: any) => ({
+                name: emp.name,
+                role: emp.role,
+                joined: emp.added_date,
+                email: emp.email,
+                status: emp.status,
+              }))
+            );
+          }
+        }
+        else {
+                  console.error("❌ Failed to fetch project employees");
+                }
+              } catch (err) {
+                console.error("❌ Error fetching employees:", err);
+              }
+            };
+
+            fetchEmployees();
+          }, [project]);
+
+          if (!project) return null;
+
+          return (
+            <AnimatePresence>
+              {project && (
+                <>
           {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -80,31 +125,54 @@ export default function AdminProjectSidepopup({
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
               <p className="text-gray-700 mb-4">{project.description}</p>
+
+              {/* Members */}
               <div className="mb-4">
                 <h3 className="text-md font-medium mb-2">Members</h3>
                 <div className="overflow-x-auto border border-gray-200">
                   <table className="w-full text-sm text-gray-700 bg-gray-100">
                     <thead>
                       <tr>
-                        <th className="p-2 text-left border-b border-gray-300">Name</th>
-                        <th className="p-2 text-left border-b border-gray-300">Role</th>
-                        <th className="p-2 text-left border-b border-gray-300">Joined</th>
-                        <th className="p-2 text-left border-b border-gray-300">Action</th>
+                        <th className="p-2 text-left border-b border-gray-300">
+                          Name
+                        </th>
+                        <th className="p-2 text-left border-b border-gray-300">
+                          Role
+                        </th>
+                        <th className="p-2 text-left border-b border-gray-300">
+                          Joined
+                        </th>
+                        <th className="p-2 text-left border-b border-gray-300">
+                          Action
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {project.membersList.map((member, index) => (
-                        <tr key={index} className="border-b border-gray-200">
-                          <td className="p-2">{member.name}</td>
-                          <td className="p-2">{member.role}</td>
-                          <td className="p-2">{member.joined}</td>
-                          <td className="p-2 text-gray-400">...</td>
+                      {members.length > 0 ? (
+                        members.map((member, index) => (
+                          <tr key={index} className="border-b border-gray-200">
+                            <td className="p-2">{member.name}</td>
+                            <td className="p-2">{member.role}</td>
+                            <td className="p-2">{member.joined}</td>
+                            <td className="p-2 text-gray-400">...</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="p-2 text-center text-gray-400"
+                          >
+                            No members found
+                          </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* Static Details (NOT from API) */}
               <div>
                 <h3 className="text-md font-medium mb-2">Details</h3>
                 <div className="bg-gray-100 p-4 rounded">
