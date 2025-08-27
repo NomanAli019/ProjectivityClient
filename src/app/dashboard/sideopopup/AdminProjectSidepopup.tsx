@@ -12,19 +12,20 @@ interface Member {
   status?: string;
 }
 
+interface TaskSummary {
+  total: number;
+  completed: number;
+  pending: number;
+  in_progress: number;
+}
+
 interface Project {
   id: number;
   title: string;
   description: string;
-  members: number;
   membersList: Member[];
-  totalTasks: number;
-  completedTasks: number;
-  inProgressTasks: number;
-  remainingTasks: number;
   projectCreated: string;
   deadline: string;
-  progressStatus: string;
 }
 
 interface AdminProjectSidepopupProps {
@@ -37,6 +38,7 @@ export default function AdminProjectSidepopup({
   onClose,
 }: AdminProjectSidepopupProps) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [taskSummary, setTaskSummary] = useState<TaskSummary | null>(null);
 
   // Close popup on ESC key
   useEffect(() => {
@@ -47,9 +49,9 @@ export default function AdminProjectSidepopup({
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Fetch employees for this project
+  // Fetch employees + task summary for this project
   useEffect(() => {
-    const fetchEmployees = async () => {
+    const fetchProjectData = async () => {
       if (!project) return;
       try {
         const res = await fetch("/api/getaprojectdata", {
@@ -62,9 +64,10 @@ export default function AdminProjectSidepopup({
           }),
         });
 
-       if (res.ok) {
+        if (res.ok) {
           const data = await res.json();
-          // Backend returns a single project object with "employees"
+
+          // Employees
           if (data.employees) {
             setMembers(
               data.employees.map((emp: any) => ({
@@ -76,24 +79,28 @@ export default function AdminProjectSidepopup({
               }))
             );
           }
+
+          // Task summary
+          if (data.tasks_summary) {
+            setTaskSummary(data.tasks_summary);
+          }
+        } else {
+          console.error("❌ Failed to fetch project data");
         }
-        else {
-                  console.error("❌ Failed to fetch project employees");
-                }
-              } catch (err) {
-                console.error("❌ Error fetching employees:", err);
-              }
-            };
+      } catch (err) {
+        console.error("❌ Error fetching project data:", err);
+      }
+    };
 
-            fetchEmployees();
-          }, [project]);
+    fetchProjectData();
+  }, [project]);
 
-          if (!project) return null;
+  if (!project) return null;
 
-          return (
-            <AnimatePresence>
-              {project && (
-                <>
+  return (
+    <AnimatePresence>
+      {project && (
+        <>
           {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -172,7 +179,7 @@ export default function AdminProjectSidepopup({
                 </div>
               </div>
 
-              {/* Static Details (NOT from API) */}
+              {/* Details */}
               <div>
                 <h3 className="text-md font-medium mb-2">Details</h3>
                 <div className="bg-gray-100 p-4 rounded">
@@ -180,31 +187,19 @@ export default function AdminProjectSidepopup({
                     <tbody>
                       <tr className="border-b">
                         <td className="p-2 font-medium">Total tasks</td>
-                        <td className="p-2">{project.totalTasks}</td>
+                        <td className="p-2">{taskSummary?.total ?? 0}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="p-2 font-medium">Completed tasks</td>
-                        <td className="p-2">{project.completedTasks}</td>
+                        <td className="p-2">{taskSummary?.completed ?? 0}</td>
                       </tr>
                       <tr className="border-b">
                         <td className="p-2 font-medium">In progress tasks</td>
-                        <td className="p-2">{project.inProgressTasks}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2 font-medium">Remaining tasks</td>
-                        <td className="p-2">{project.remainingTasks}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2 font-medium">Project created</td>
-                        <td className="p-2">{project.projectCreated}</td>
-                      </tr>
-                      <tr className="border-b">
-                        <td className="p-2 font-medium">Deadline</td>
-                        <td className="p-2">{project.deadline}</td>
+                        <td className="p-2">{taskSummary?.in_progress ?? 0}</td>
                       </tr>
                       <tr>
-                        <td className="p-2 font-medium">Progress status</td>
-                        <td className="p-2">{project.progressStatus}</td>
+                        <td className="p-2 font-medium">Remaining tasks</td>
+                        <td className="p-2">{taskSummary?.pending ?? 0}</td>
                       </tr>
                     </tbody>
                   </table>
