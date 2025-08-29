@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react"; 
+import { ArrowLeft } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
@@ -34,7 +34,6 @@ export default function InboxPage() {
         if (!res.ok) throw new Error("Failed to fetch inbox");
 
         const data = await res.json();
-        // 👇 FIX: setChats only with notifications array
         setChats(data.notifications || []);
       } catch (err) {
         console.error("❌ Error fetching inbox:", err);
@@ -44,14 +43,35 @@ export default function InboxPage() {
     fetchInbox();
   }, []);
 
-  // Badge color (read/unread)
-  const getBadgeColor = (isRead: number) => {
-    return isRead === 0
-      ? "text-red-600 bg-red-100"
-      : "text-green-600 bg-green-100";
+  // ✅ Call backend to mark notification as read
+  const markAsRead = async (notificationId: number) => {
+    try {
+      const res = await fetch("/api/marknotificationreaded", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notification_id: notificationId }),
+      });
+
+      const data = await res.json();
+      console.log("📩 Marked as read response:", data);
+    } catch (err) {
+      console.error("❌ Error marking notification as read:", err);
+    }
   };
 
-  // Filter chats based on search
+  // Badge color (Unread = Blue, Read = Red)
+  const getBadgeColor = (isRead: number) => {
+    return isRead === 0
+      ? "text-blue-600 bg-blue-100"
+      : "text-red-600 bg-red-100";
+  };
+
+  // Title/status color (Unread = Blue, Read = Red)
+  const getTextColor = (isRead: number) => {
+    return isRead === 0 ? "text-blue-600" : "text-red-600";
+  };
+
   const filteredChats = chats.filter(
     (chat) =>
       chat.message.toLowerCase().includes(search.toLowerCase()) ||
@@ -91,7 +111,10 @@ export default function InboxPage() {
                 filteredChats.map((chat) => (
                   <div
                     key={chat.notification_id}
-                    onClick={() => setActiveChat(chat)}
+                    onClick={() => {
+                      setActiveChat(chat);
+                      markAsRead(chat.notification_id); // ✅ Send ID on click
+                    }}
                     className={`p-4 rounded-lg cursor-pointer mb-3 border transition ${
                       activeChat?.notification_id === chat.notification_id
                         ? "bg-blue-50 border-blue-400 shadow-md"
@@ -110,8 +133,10 @@ export default function InboxPage() {
                         {new Date(chat.created_at).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-gray-700 text-sm truncate">
-                      Status: {chat.is_read === 0 ? "Unread" : "Read"}
+                    {/* Status + Title */}
+                    <p className={`text-sm font-semibold ${getTextColor(chat.is_read)}`}>
+                      {chat.project_title || "No Project"} — Status:{" "}
+                      {chat.is_read === 0 ? "Unread" : "Read"}
                     </p>
                   </div>
                 ))
@@ -134,7 +159,6 @@ export default function InboxPage() {
                 {/* Chat Header */}
                 <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-xl flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {/* Back button (only on mobile) */}
                     <button
                       onClick={() => setActiveChat(null)}
                       className="md:hidden p-2 rounded-full hover:bg-blue-600 transition"
@@ -153,7 +177,11 @@ export default function InboxPage() {
                 {/* Task Info */}
                 <div className="flex-1 p-6 overflow-y-auto space-y-5">
                   <div className="bg-white shadow rounded-xl p-4">
-                    <h4 className="font-bold text-lg text-gray-800">
+                    <h4
+                      className={`font-bold text-lg ${
+                        activeChat.is_read === 0 ? "text-blue-600" : "text-red-600"
+                      }`}
+                    >
                       {activeChat.task_title || "No Task Title"}
                     </h4>
                     <p className="text-gray-600 mt-2">
@@ -162,7 +190,7 @@ export default function InboxPage() {
                   </div>
                 </div>
 
-                {/* Input (Disabled since it's just notifications) */}
+                {/* Info Footer */}
                 <div className="p-4 border-t bg-white flex justify-center text-gray-400 text-sm">
                   🔔 This is a notification view (no replies)
                 </div>
