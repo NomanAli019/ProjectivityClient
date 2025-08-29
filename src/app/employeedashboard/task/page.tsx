@@ -15,6 +15,7 @@ type Task = {
 // Project type
 export type Project = {
   project_id: number;
+  admin_id: number; // ✅ added admin_id
   project_title: string;
   tasks: Task[];
 };
@@ -54,6 +55,7 @@ export default function EmployeeTasks() {
           setProjects(
             data.tasks.map((proj: Project) => ({
               project_id: proj.project_id,
+              admin_id: proj.admin_id, // ✅ include admin_id
               project_title: proj.project_title,
               tasks: proj.tasks || [],
             }))
@@ -75,6 +77,7 @@ export default function EmployeeTasks() {
   // ✅ Function to update task status with backend call
   const updateTaskStatus = async (
     projectId: number,
+    adminId: number, // ✅ take adminId also
     taskId: number,
     currentStatus: Task["status"]
   ) => {
@@ -92,6 +95,7 @@ export default function EmployeeTasks() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           project_id: projectId,
+          admin_id: adminId, // ✅ send admin_id too
           task_id: taskId,
           status: newStatus,
         }),
@@ -206,6 +210,7 @@ export default function EmployeeTasks() {
                               onClick={() =>
                                 updateTaskStatus(
                                   project.project_id,
+                                  project.admin_id, // ✅ pass admin_id
                                   task.task_id,
                                   task.status
                                 )
