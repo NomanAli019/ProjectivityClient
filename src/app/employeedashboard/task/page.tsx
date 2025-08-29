@@ -1,97 +1,129 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/empcomponents/siderbar"; // ✅ employee sidebar
 import EmployeeHeader from "@/empcomponents/Header"; // ✅ employee header
 
 // Task type
 type Task = {
-  id: number;
+  task_id: number;
   title: string;
   description: string;
   status: "Pending" | "In Progress" | "Completed";
 };
 
 // Project type
-type Project = {
-  name: string;
+export type Project = {
+  project_id: number;
+  project_title: string;
   tasks: Task[];
 };
 
-// Initial static projects
-const initialProjects: Project[] = [
-  {
-    name: "Handymanfast",
-    tasks: [
-      {
-        id: 1,
-        title: "Change the colour scheme",
-        description: "Update overall theme colors to match branding.",
-        status: "Pending",
-      },
-      {
-        id: 2,
-        title: "Solve responsive issue",
-        description: "Fix layout issues on mobile devices.",
-        status: "Pending",
-      },
-    ],
-  },
-  {
-    name: "CRM Dashboard",
-    tasks: [
-      {
-        id: 3,
-        title: "Setup OTP authentication",
-        description: "Integrate OTP login with SMS/email.",
-        status: "In Progress",
-      },
-    ],
-  },
-  {
-    name: "Website Revamp",
-    tasks: [
-      {
-        id: 4,
-        title: "Migrate to Next.js",
-        description: "Rebuild site using Next.js for SSR.",
-        status: "Pending",
-      },
-    ],
-  },
-];
+// Backend API response type
+type EmployeeTasksResponse = {
+  message: string;
+  tasks: Project[];
+};
 
 export default function EmployeeTasks() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Function to update task status
-  const updateTaskStatus = (projectName: string, taskId: number) => {
-    setProjects((prevProjects: Project[]): Project[] => {
-      return prevProjects
-        .map((project): Project => {
-          if (project.name !== projectName) return project;
+  // Fetch tasks from backend on page load
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await fetch("/api/empgetasks", {
+          method: "POST",
+          credentials: "include", // ✅ important for session cookies
+          headers: { "Content-Type": "application/json" },
+        });
 
-          const updatedTasks: Task[] = project.tasks.map((task): Task =>
-            task.id === taskId
-              ? {
-                  ...task,
-                  status:
-                    task.status === "Pending"
-                      ? "In Progress"
-                      : task.status === "In Progress"
-                      ? "Completed"
-                      : "Completed",
-                }
-              : task
+        if (!res.ok) {
+          console.error("Failed to fetch tasks:", res.status);
+          setProjects([]);
+          return;
+        }
+
+        const data: EmployeeTasksResponse = await res.json();
+        console.log("📥 API response:", data);
+
+        // ✅ Normalize: projects are inside data.tasks
+        if (Array.isArray(data.tasks)) {
+          setProjects(
+            data.tasks.map((proj: Project) => ({
+              project_id: proj.project_id,
+              project_title: proj.project_title,
+              tasks: proj.tasks || [],
+            }))
           );
+        } else {
+          setProjects([]);
+        }
+      } catch (err) {
+        console.error("❌ Error fetching tasks:", err);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-          return { ...project, tasks: updatedTasks };
-        })
-        .filter((project) =>
-          project.tasks.some((task) => task.status !== "Completed")
-        ); // remove fully completed projects
-    });
+    fetchTasks();
+  }, []);
+
+  // ✅ Function to update task status with backend call
+  const updateTaskStatus = async (
+    projectId: number,
+    taskId: number,
+    currentStatus: Task["status"]
+  ) => {
+    const newStatus: Task["status"] =
+      currentStatus === "Pending"
+        ? "In Progress"
+        : currentStatus === "In Progress"
+        ? "Completed"
+        : "Completed";
+
+    try {
+      const res = await fetch("/api/empupdatetask", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          project_id: projectId,
+          task_id: taskId,
+          status: newStatus,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("❌ Failed to update task:", res.status);
+        return;
+      }
+
+      const result = await res.json();
+      console.log("✅ Task updated response:", result);
+
+      // Update frontend state only if backend confirms
+      setProjects((prevProjects: Project[]): Project[] =>
+        prevProjects
+          .map((project): Project => {
+            if (project.project_id !== projectId) return project;
+
+            const updatedTasks: Task[] = project.tasks.map((task): Task =>
+              task.task_id === taskId ? { ...task, status: newStatus } : task
+            );
+
+            return { ...project, tasks: updatedTasks };
+          })
+          .filter((project) =>
+            project.tasks.some((task) => task.status !== "Completed")
+          )
+      );
+    } catch (err) {
+      console.error("❌ Error updating task:", err);
+    }
   };
 
   return (
@@ -109,88 +141,90 @@ export default function EmployeeTasks() {
         <div className="mt-4">
           <h1 className="text-xl font-bold mb-6">📋 My Tasks</h1>
 
-          {/* Projects - Horizontal scroll with snapping */}
-          <div
-            className="flex space-x-4 overflow-x-auto pb-3 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }} // Firefox & IE
-          >
-            {/* hide scrollbar for Chrome/Edge/Safari */}
-            <style jsx>{`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-
-            {projects.map((project) => (
-              <div
-                key={project.name}
-                className="bg-gray-50 rounded-xl shadow-md p-4 flex-shrink-0 snap-start min-w-[calc(100%/1.05)] sm:min-w-[calc(100%/2.1)] lg:min-w-[calc(100%/3.2)]"
-
-              >
-                {/* Project Header */}
-                <h2 className="text-lg font-semibold mb-3 text-cyan-600">
-                  {project.name}
-                </h2>
-
-                {/* Task List */}
-                <div className="space-y-3">
-                  {project.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`p-3 rounded-lg border transition ${
-                        task.status === "Pending"
-                          ? "bg-red-50 border-red-200"
-                          : task.status === "In Progress"
-                          ? "bg-yellow-50 border-yellow-200"
-                          : "bg-green-50 border-green-200"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{task.title}</p>
-                          <p className="text-xs text-gray-600">
-                            {task.description}
-                          </p>
-                          <span
-                            className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                              task.status === "Pending"
-                                ? "bg-red-100 text-red-700"
-                                : task.status === "In Progress"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
-                          >
-                            {task.status}
-                          </span>
-                        </div>
-
-                        {/* Status Update Button */}
-                        {task.status !== "Completed" && (
-                          <button
-                            onClick={() =>
-                              updateTaskStatus(project.name, task.id)
-                            }
-                            className="ml-3 px-3 py-1 rounded-lg text-xs bg-cyan-500 hover:bg-cyan-600 text-white"
-                          >
-                            Mark as{" "}
-                            {task.status === "Pending"
-                              ? "In Progress"
-                              : "Completed"}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* If all projects are done */}
-          {projects.length === 0 && (
+          {loading ? (
+            <p className="text-center text-gray-500">⏳ Loading tasks...</p>
+          ) : projects.length === 0 ? (
             <p className="text-center text-gray-500 mt-10">
               ✅ All tasks completed! 🎉
             </p>
+          ) : (
+            <div
+              className="flex space-x-4 overflow-x-auto pb-3 snap-x snap-mandatory"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+
+              {projects.map((project) => (
+                <div
+                  key={project.project_id}
+                  className="bg-gray-50 rounded-xl shadow-md p-4 flex-shrink-0 snap-start min-w-[calc(100%/1.05)] sm:min-w-[calc(100%/2.1)] lg:min-w-[calc(100%/3.2)]"
+                >
+                  {/* Project Header */}
+                  <h2 className="text-lg font-semibold mb-3 text-cyan-600">
+                    {project.project_title}
+                  </h2>
+
+                  {/* Task List */}
+                  <div className="space-y-3">
+                    {project.tasks.map((task) => (
+                      <div
+                        key={task.task_id}
+                        className={`p-3 rounded-lg border transition ${
+                          task.status === "Pending"
+                            ? "bg-red-50 border-red-200"
+                            : task.status === "In Progress"
+                            ? "bg-yellow-50 border-yellow-200"
+                            : "bg-green-50 border-green-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">{task.title}</p>
+                            <p className="text-xs text-gray-600">
+                              {task.description}
+                            </p>
+                            <span
+                              className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                                task.status === "Pending"
+                                  ? "bg-red-100 text-red-700"
+                                  : task.status === "In Progress"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-green-100 text-green-700"
+                              }`}
+                            >
+                              {task.status}
+                            </span>
+                          </div>
+
+                          {/* Status Update Button */}
+                          {task.status !== "Completed" && (
+                            <button
+                              onClick={() =>
+                                updateTaskStatus(
+                                  project.project_id,
+                                  task.task_id,
+                                  task.status
+                                )
+                              }
+                              className="ml-3 px-3 py-1 rounded-lg text-xs bg-cyan-500 hover:bg-cyan-600 text-white"
+                            >
+                              Mark as{" "}
+                              {task.status === "Pending"
+                                ? "In Progress"
+                                : "Completed"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </main>

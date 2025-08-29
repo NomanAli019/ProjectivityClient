@@ -44,27 +44,25 @@ type Task = {
 type Project = {
   id: number;
   name: string;
-  tasks: Task[];
+  employees: {
+    id: number;
+    name: string;
+    tasks: Task[];
+  }[];
 };
 
 // -----------------------------
 // Helpers
 // -----------------------------
-const groupTasks = (tasks: Task[]) => {
-  return tasks.reduce((acc: Record<string, Task[]>, task) => {
-    if (!acc[task.assignee]) acc[task.assignee] = [];
-    acc[task.assignee].push(task);
-    return acc;
-  }, {});
-};
-
 const transformProjects = (data: BackendProject[]): Project[] => {
   if (!Array.isArray(data)) return [];
   return data.map((proj) => ({
     id: proj.project_id,
     name: proj.project_title,
-    tasks: proj.employees.flatMap((emp) =>
-      emp.tasks.map((t) => ({
+    employees: proj.employees.map((emp) => ({
+      id: emp.employee_id,
+      name: emp.employee_name,
+      tasks: emp.tasks.map((t) => ({
         id: t.task_id,
         assignee: emp.employee_name,
         title: t.title,
@@ -72,8 +70,8 @@ const transformProjects = (data: BackendProject[]): Project[] => {
         status: (t.status as Task["status"]) || "Pending",
         employeeId: emp.employee_id,
         projectId: proj.project_id,
-      }))
-    ),
+      })),
+    })),
   }));
 };
 
@@ -114,8 +112,6 @@ export default function AdTaskEmp() {
   const selectedProjectData = projects.find(
     (p) => p.id === selectedProject
   );
-  const tasks = selectedProjectData?.tasks || [];
-  const groupedTasks = groupTasks(tasks);
 
   // ✅ Add new task (POST to backend)
   const handleAddTask = async (employeeId: number, assignee: string) => {
@@ -152,7 +148,14 @@ export default function AdTaskEmp() {
       setProjects((prev) =>
         prev.map((project) =>
           project.id === selectedProject
-            ? { ...project, tasks: [...project.tasks, newTaskObj] }
+            ? {
+                ...project,
+                employees: project.employees.map((emp) =>
+                  emp.id === employeeId
+                    ? { ...emp, tasks: [...emp.tasks, newTaskObj] }
+                    : emp
+                ),
+              }
             : project
         )
       );
@@ -202,121 +205,121 @@ export default function AdTaskEmp() {
           {/* Horizontal Scrollable Employees Columns */}
           <div className="overflow-x-auto">
             <div className="flex space-x-6 min-w-max">
-              {Object.entries(groupedTasks).map(([assignee, empTasks]) => {
-                const employeeId = empTasks[0]?.employeeId; // since all tasks share same employeeId
-                return (
-                  <div
-                    key={assignee}
-                    className="w-96 flex-shrink-0 bg-gray-50 rounded-xl shadow p-4 flex flex-col"
-                  >
-                    {/* Assignee Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-sm font-semibold text-gray-800">
-                        {assignee}
-                      </h2>
-                      <button
-                        onClick={() =>
-                          setAddingTaskFor(
-                            addingTaskFor === employeeId ? null : employeeId
-                          )
+              {selectedProjectData?.employees.map((emp) => (
+                <div
+                  key={emp.id}
+                  className="w-96 flex-shrink-0 bg-gray-50 rounded-xl shadow p-4 flex flex-col"
+                >
+                  {/* Assignee Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-semibold text-gray-800">
+                      {emp.name}
+                    </h2>
+                    <button
+                      onClick={() =>
+                        setAddingTaskFor(
+                          addingTaskFor === emp.id ? null : emp.id
+                        )
+                      }
+                      className="p-1 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+
+                  {/* Inline Add Task Form */}
+                  {addingTaskFor === emp.id && (
+                    <div className="mb-4 space-y-2 bg-white p-3 rounded-md border">
+                      <input
+                        type="text"
+                        placeholder="Task title"
+                        value={newTask.title}
+                        onChange={(e) =>
+                          setNewTask({ ...newTask, title: e.target.value })
                         }
-                        className="p-1 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                      <textarea
+                        placeholder="Task description"
+                        value={newTask.description}
+                        onChange={(e) =>
+                          setNewTask({
+                            ...newTask,
+                            description: e.target.value,
+                          })
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                      <button
+                        onClick={() => handleAddTask(emp.id, emp.name)}
+                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-sm px-2 py-1 rounded"
                       >
-                        <Plus size={14} />
+                        Save Task
                       </button>
                     </div>
+                  )}
 
-                    {/* Inline Add Task Form */}
-                    {addingTaskFor === employeeId && (
-                      <div className="mb-4 space-y-2 bg-white p-3 rounded-md border">
-                        <input
-                          type="text"
-                          placeholder="Task title"
-                          value={newTask.title}
-                          onChange={(e) =>
-                            setNewTask({ ...newTask, title: e.target.value })
-                          }
-                          className="w-full border rounded px-2 py-1 text-sm"
-                        />
-                        <textarea
-                          placeholder="Task description"
-                          value={newTask.description}
-                          onChange={(e) =>
-                            setNewTask({
-                              ...newTask,
-                              description: e.target.value,
-                            })
-                          }
-                          className="w-full border rounded px-2 py-1 text-sm"
-                        />
-                        <button
-                          onClick={() =>
-                            handleAddTask(employeeId, assignee)
-                          }
-                          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-sm px-2 py-1 rounded"
-                        >
-                          Save Task
-                        </button>
-                      </div>
+                  {/* Status Labels */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {["In Progress", "Pending", "Completed"].map((status) => (
+                      <span
+                        key={status}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          status === "In Progress"
+                            ? "bg-cyan-100 text-cyan-700"
+                            : status === "Pending"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-purple-100 text-purple-700"
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Tasks List */}
+                  <div className="space-y-3 overflow-y-auto">
+                    {emp.tasks.length === 0 && (
+                      <p className="text-xs text-gray-400">
+                        No tasks assigned yet.
+                      </p>
                     )}
-
-                    {/* Status Labels */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {["In Progress", "Pending", "Completed"].map((status) => (
-                        <span
-                          key={status}
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            status === "In Progress"
+                    {emp.tasks.map((task, index) => {
+                      const isExpanded =
+                        expandedTask === index + emp.id;
+                      return (
+                        <div
+                          key={task.id}
+                          onClick={() =>
+                            setExpandedTask(
+                              isExpanded ? null : index + emp.id
+                            )
+                          }
+                          className={`p-3 rounded-lg shadow hover:shadow-md transition cursor-pointer ${
+                            task.status === "In Progress"
                               ? "bg-cyan-100 text-cyan-700"
-                              : status === "Pending"
+                              : task.status === "Pending"
                               ? "bg-red-100 text-red-700"
                               : "bg-purple-100 text-purple-700"
                           }`}
                         >
-                          {status}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Tasks List */}
-                    <div className="space-y-3 overflow-y-auto">
-                      {empTasks.map((task, index) => {
-                        const isExpanded =
-                          expandedTask === index + assignee.length;
-                        return (
-                          <div
-                            key={task.id}
-                            onClick={() =>
-                              setExpandedTask(
-                                isExpanded ? null : index + assignee.length
-                              )
-                            }
-                            className={`p-3 rounded-lg shadow hover:shadow-md transition cursor-pointer ${
-                              task.status === "In Progress"
-                                ? "bg-cyan-100 text-cyan-700"
-                                : task.status === "Pending"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-purple-100 text-purple-700"
-                            }`}
-                          >
-                            <p className="text-xs opacity-80">{task.status}</p>
-                            <p className="mt-1 text-sm font-medium">
-                              {task.title}
+                          <p className="text-xs opacity-80">{task.status}</p>
+                          <p className="mt-1 text-sm font-medium">
+                            {task.title}
+                          </p>
+                          {task.description && (
+                            <p className="mt-1 text-xs">
+                              {isExpanded
+                                ? task.description
+                                : task.description.slice(0, 40) + "..."}
                             </p>
-                            {task.description && (
-                              <p className="mt-1 text-xs">
-                                {isExpanded
-                                  ? task.description
-                                  : task.description.slice(0, 40) + "..."}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
