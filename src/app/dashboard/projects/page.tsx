@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import AdminProjectSidepopup from "@/app/dashboard/sideopopup/AdminProjectSidepopup";
 import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp";
+import AddMemberSidepopup from "@/app/dashboard/sideopopup/AddMemberInproject";
 
 interface Member {
   name: string;
@@ -34,6 +35,7 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [addMemberProject, setAddMemberProject] = useState<Project | null>(null);
 
   // ✅ Fetch projects dynamically
   useEffect(() => {
@@ -57,12 +59,6 @@ export default function ProjectsPage() {
     fetchProjects();
   }, []);
 
-  // ✅ Placeholder for Add Members action
-  const handleAddMembers = (project: Project) => {
-    console.log("➕ Add Members clicked for project:", project.title);
-    // later you can open a popup here
-  };
-
   return (
     <div className="min-h-screen flex bg-white text-black font-sans">
       {/* Sidebar */}
@@ -70,7 +66,9 @@ export default function ProjectsPage() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <Header username="Muhammad Jazib" onMenuClick={() => setSidebarOpen(true)} />
+        <Header
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
         {/* Page Title with Plus Button */}
         <div className="flex justify-between items-center mb-4">
@@ -117,7 +115,7 @@ export default function ProjectsPage() {
                       </button>
                       <button
                         onClick={() => {
-                          handleAddMembers(project);
+                          setAddMemberProject(project);
                           setMenuOpen(null);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
@@ -158,6 +156,18 @@ export default function ProjectsPage() {
         <AdminProjectSidepopup
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
+        />
+      )}
+
+      {/* Add Member Side Popup */}
+      {addMemberProject && (
+        <AddMemberSidepopup
+          projectId={addMemberProject.id}
+          projectTitle={addMemberProject.title}
+          onClose={() => setAddMemberProject(null)}
+          onMemberAdded={() => {
+            console.log("🔔 Refresh project members if needed");
+          }}
         />
       )}
 

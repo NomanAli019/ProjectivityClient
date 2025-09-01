@@ -1,22 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
-import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp"; // 👈 import popup
+import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp";
 
 type HeaderProps = {
-  username: string;
   onMenuClick: () => void;
 };
 
-export default function Header({ username, onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick }: HeaderProps) {
   const [showPopup, setShowPopup] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+
+  // ✅ Greeting based on time
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  // ✅ Fetch admin profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/getadminprofile", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        setFirstName(data.first_name || "");
+        setLastName(data.last_name || "");
+        setProfilePic(data.profile_pic || null);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
       {/* Left - Greeting */}
       <h1 className="text-lg sm:text-xl font-semibold flex-1">
-        Good Morning, <span className="font-bold">{username}</span>
+        {getGreeting()},{" "}
+        <span className="font-bold">
+          {firstName} {lastName}
+        </span>
       </h1>
 
       {/* Middle - Search */}
@@ -43,14 +79,23 @@ export default function Header({ username, onMenuClick }: HeaderProps) {
         </button>
 
         {/* Create Task Button */}
-        <button className="border border-[#BC73F9] text-[#BC73F9] px-3 py-1 rounded-[20px] 
+        <button
+          className="border border-[#BC73F9] text-[#BC73F9] px-3 py-1 rounded-[20px] 
                            hover:bg-[#BC73F90F] transition duration-200"
         >
           + Create Task
         </button>
 
-        {/* Avatar Placeholder */}
-        <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+        {/* Avatar */}
+        {profilePic ? (
+          <img
+            src={profilePic}  // ✅ Already a full URL
+            alt="Profile"
+            className="w-8 h-8 rounded-full object-cover border"
+          />
+        ) : (
+          <div className="w-8 h-8 bg-gray-300 rounded-full" />
+        )}
 
         {/* Mobile menu button */}
         <button
