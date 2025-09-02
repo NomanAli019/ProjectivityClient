@@ -85,7 +85,7 @@ export default function InboxPage() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <Header username="Admin Panel" onMenuClick={() => setSidebarOpen(true)} />
+        <Header  onMenuClick={() => setSidebarOpen(true)} />
 
         {/* Inbox Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 h-[calc(100vh-100px)]">

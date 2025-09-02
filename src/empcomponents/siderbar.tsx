@@ -102,9 +102,9 @@ export default function EmployeeSidebar({ isOpen, onClose }: Props) {
         {/* Bottom links */}
         <div className="mt-auto flex flex-col gap-2 text-sm">
           <Link
-            href="/employee/settings"
+            href="/employeedashboard/settings"
             className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
-              pathname === "/employee/settings"
+              pathname === "/employeedashboard/settings"
                 ? "bg-black text-white"
                 : "text-black hover:bg-black/10"
             }`}

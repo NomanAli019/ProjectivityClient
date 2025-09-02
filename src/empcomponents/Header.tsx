@@ -1,18 +1,54 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 
 type HeaderProps = {
-  username: string;
   onMenuClick: () => void;
 };
 
-export default function EmployeeHeader({ username, onMenuClick }: HeaderProps) {
+export default function EmployeeHeader({ onMenuClick }: HeaderProps) {
+  const [username, setUsername] = useState("Employee");
+  const [greeting, setGreeting] = useState("Hello");
+
+  // ✅ Get greeting based on current time
+  const getGreeting = () => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "Good Morning";
+    if (hours < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  useEffect(() => {
+    setGreeting(getGreeting());
+
+    // ✅ Fetch employee name from Flask backend
+    const fetchEmployee = async () => {
+      try {
+        const res = await fetch("/api/getheaderemploye", {
+          method: "GET",
+          credentials: "include", // 🔑 pass cookies/session
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch employee name");
+        }
+
+        const data = await res.json();
+        setUsername(data.username || "Employee");
+      } catch (error) {
+        console.error("Error fetching employee:", error);
+      }
+    };
+
+    fetchEmployee();
+  }, []);
+
   return (
     <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
       {/* Left - Greeting */}
       <h1 className="text-lg sm:text-xl font-semibold flex-1">
-        Good Morning, <span className="font-bold">{username}</span>
+        {greeting}, <span className="font-bold">{username}</span>
       </h1>
 
       {/* Middle - Search */}

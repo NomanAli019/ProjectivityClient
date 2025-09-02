@@ -138,7 +138,7 @@ export default function EmployeeTasks() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
         <EmployeeHeader
-          username="John Doe"
+          
           onMenuClick={() => setSidebarOpen(true)}
         />
 
