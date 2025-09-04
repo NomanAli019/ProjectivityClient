@@ -45,7 +45,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white shadow-md rounded-2xl p-8">
         {/* Icon */}
         <div className="flex justify-center mb-4">
@@ -87,7 +87,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg font-medium shadow"
+            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg font-medium shadow transition"
             disabled={loading}
           >
             {loading ? "Processing..." : "SIGN IN"}
@@ -97,7 +97,7 @@ export default function LoginPage() {
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-4">
           Don’t have an account?{" "}
-          <Link href="/signup" className="text-cyan-600 hover:underline">
+          <Link href="/signup" className="text-cyan-600 font-medium hover:underline">
             Sign up
           </Link>
         </p>

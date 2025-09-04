@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* ✅ Fix faded text in mobile inputs */
+input {
+  color: #000 !important; /* Always black text */
+  -webkit-text-fill-color: #000 !important; /* Safari/Chrome autofill fix */
+}
+
+/* ✅ Remove autofill background tint */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  -webkit-text-fill-color: #000 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

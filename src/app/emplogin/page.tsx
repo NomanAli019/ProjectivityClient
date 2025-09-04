@@ -45,7 +45,7 @@ export default function EmployeeLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white shadow-md rounded-2xl p-8">
         {/* Icon */}
         <div className="flex justify-center mb-4">
@@ -72,7 +72,7 @@ export default function EmployeeLoginPage() {
             placeholder="Email Address *"
             value={form.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none text-black"
             required
           />
           <input
@@ -81,13 +81,13 @@ export default function EmployeeLoginPage() {
             placeholder="Login PIN *"
             value={form.login_pin}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none"
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 outline-none text-black"
             required
           />
 
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg font-medium shadow"
+            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg font-medium shadow transition"
             disabled={loading}
           >
             {loading ? "Processing..." : "SIGN IN"}
@@ -97,7 +97,7 @@ export default function EmployeeLoginPage() {
         {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-4">
           Are you an admin?{" "}
-          <Link href="/login" className="text-cyan-600 hover:underline">
+          <Link href="/login" className="text-cyan-600 font-medium hover:underline">
             Admin Login
           </Link>
         </p>

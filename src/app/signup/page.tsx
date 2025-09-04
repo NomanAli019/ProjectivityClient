@@ -24,7 +24,6 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // ✅ Call Flask via Next.js rewrite proxy
       const res = await fetch("/api/admin/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,7 +42,7 @@ export default function SignupPage() {
         alert(data.message || "Signup failed");
       } else {
         alert("Signup successful! Redirecting to login...");
-        router.push("/login"); // 👈 redirect to login
+        router.push("/login");
       }
     } catch (error) {
       console.error("Error during signup:", error);
