@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import AddMemberPopup from "@/app/dashboard/Admember/page"; // 👈 import popup
+import AddMemberPopup from "@/app/dashboard/Admember/addmem"; // 👈 import popup
 
 type Member = {
   name: string;
