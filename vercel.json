@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://projectivityserver.onrender.com/$1" }
+  ]
+}
