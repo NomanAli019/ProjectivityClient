@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // ✅ import Image
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -77,9 +78,14 @@ export default function Sidebar({ isOpen, onClose }: Props) {
         {/* Top logo + close */}
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-2">
-            <div className="bg-black text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">
-              P
-            </div>
+            {/* ✅ Logo Image */}
+            <Image
+              src="/Pictureproj.png"
+              alt="Projectivity Logo"
+              width={32} // adjust as needed
+              height={32}
+              className="rounded-md"
+            />
             <h1 className="text-lg font-semibold">Projectivity</h1>
           </div>
           <button

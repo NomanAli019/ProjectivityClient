@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image"; // ✅ import Image
 
 type Props = {
   isOpen: boolean;
@@ -63,9 +64,14 @@ export default function EmployeeSidebar({ isOpen, onClose }: Props) {
         {/* Top logo + close */}
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-2">
-            <div className="bg-black text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">
-              P
-            </div>
+            {/* ✅ Replaced "P" with logo */}
+            <Image
+              src="/Pictureproj.png"
+              alt="Projectivity Logo"
+              width={32}
+              height={32}
+              className="rounded-md"
+            />
             <h1 className="text-lg font-semibold">Projectivity</h1>
           </div>
           <button

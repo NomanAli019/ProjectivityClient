@@ -101,6 +101,14 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+
+        {/* Employee Login Button */}
+        <p className="text-center text-sm text-gray-600 mt-2">
+          Employee?{" "}
+          <Link href="/emplogin" className="text-cyan-600 font-medium hover:underline">
+            Employee Login
+          </Link>
+        </p>
       </div>
     </div>
   );
