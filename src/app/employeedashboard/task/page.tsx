@@ -137,10 +137,7 @@ export default function EmployeeTasks() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
-        <EmployeeHeader
-          
-          onMenuClick={() => setSidebarOpen(true)}
-        />
+        <EmployeeHeader onMenuClick={() => setSidebarOpen(true)} />
 
         <div className="mt-4">
           <h1 className="text-xl font-bold mb-6">📋 My Tasks</h1>
@@ -165,68 +162,66 @@ export default function EmployeeTasks() {
               {projects.map((project) => (
                 <div
                   key={project.project_id}
-                  className="bg-gray-50 rounded-xl shadow-md p-4 flex-shrink-0 snap-start min-w-[calc(100%/1.05)] sm:min-w-[calc(100%/2.1)] lg:min-w-[calc(100%/3.2)]"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-shrink-0 snap-start min-w-full"
                 >
                   {/* Project Header */}
-                  <h2 className="text-lg font-semibold mb-3 text-cyan-600">
+                  <h2 className="col-span-full text-lg font-semibold mb-3 text-cyan-600">
                     {project.project_title}
                   </h2>
 
-                  {/* Task List */}
-                  <div className="space-y-3">
-                    {project.tasks.map((task) => (
-                      <div
-                        key={task.task_id}
-                        className={`p-3 rounded-lg border transition ${
-                          task.status === "Pending"
-                            ? "bg-red-50 border-red-200"
-                            : task.status === "In Progress"
-                            ? "bg-yellow-50 border-yellow-200"
-                            : "bg-green-50 border-green-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">{task.title}</p>
-                            <p className="text-xs text-gray-600 break-words whitespace-pre-line">
-                              {task.description}
-                            </p>
-                            <span
-                              className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                                task.status === "Pending"
-                                  ? "bg-red-100 text-red-700"
-                                  : task.status === "In Progress"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-green-100 text-green-700"
-                              }`}
-                            >
-                              {task.status}
-                            </span>
-                          </div>
-
-                          {/* Status Update Button */}
-                          {task.status !== "Completed" && (
-                            <button
-                              onClick={() =>
-                                updateTaskStatus(
-                                  project.project_id,
-                                  project.admin_id, // ✅ pass admin_id
-                                  task.task_id,
-                                  task.status
-                                )
-                              }
-                              className="ml-3 px-3 py-1 rounded-lg text-xs bg-cyan-500 hover:bg-cyan-600 text-white"
-                            >
-                              Mark as{" "}
-                              {task.status === "Pending"
-                                ? "In Progress"
-                                : "Completed"}
-                            </button>
-                          )}
+                  {/* Task Cards (3 per row) */}
+                  {project.tasks.map((task) => (
+                    <div
+                      key={task.task_id}
+                      className={`p-3 rounded-lg border transition shadow-md ${
+                        task.status === "Pending"
+                          ? "bg-red-50 border-red-200"
+                          : task.status === "In Progress"
+                          ? "bg-yellow-50 border-yellow-200"
+                          : "bg-green-50 border-green-200"
+                      }`}
+                    >
+                      <div className="flex flex-col h-full justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{task.title}</p>
+                          <p className="text-xs text-gray-600 break-words whitespace-pre-line">
+                            {task.description}
+                          </p>
+                          <span
+                            className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              task.status === "Pending"
+                                ? "bg-red-100 text-red-700"
+                                : task.status === "In Progress"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
+                            {task.status}
+                          </span>
                         </div>
+
+                        {/* Status Update Button */}
+                        {task.status !== "Completed" && (
+                          <button
+                            onClick={() =>
+                              updateTaskStatus(
+                                project.project_id,
+                                project.admin_id, // ✅ pass admin_id
+                                task.task_id,
+                                task.status
+                              )
+                            }
+                            className="mt-3 px-3 py-1 rounded-lg text-xs bg-cyan-500 hover:bg-cyan-600 text-white"
+                          >
+                            Mark as{" "}
+                            {task.status === "Pending"
+                              ? "In Progress"
+                              : "Completed"}
+                          </button>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
