@@ -188,7 +188,7 @@ export default function EmployeeTasks() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium">{task.title}</p>
-                            <p className="text-xs text-gray-600">
+                            <p className="text-xs text-gray-600 break-words whitespace-pre-line">
                               {task.description}
                             </p>
                             <span
