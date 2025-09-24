@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
+import { useRouter } from "next/navigation"; // ✅ Import router
 import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp";
 
 type HeaderProps = {
@@ -13,6 +14,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profilePic, setProfilePic] = useState<string | null>(null);
+
+  const router = useRouter(); // ✅ Initialize router
 
   // ✅ Greeting based on time
   const getGreeting = () => {
@@ -78,10 +81,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
           + New Project
         </button>
 
-        {/* Create Task Button */}
+        {/* ✅ Create Task Button navigates */}
         <button
+          onClick={() => router.push("/dashboard/AdTask")}
           className="border border-[#BC73F9] text-[#BC73F9] px-3 py-1 rounded-[20px] 
-                           hover:bg-[#BC73F90F] transition duration-200"
+                     hover:bg-[#BC73F90F] transition duration-200"
         >
           + Create Task
         </button>
@@ -89,7 +93,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Avatar */}
         {profilePic ? (
           <img
-            src={profilePic}  // ✅ Already a full URL
+            src={profilePic} // ✅ Already a full URL
             alt="Profile"
             className="w-8 h-8 rounded-full object-cover border"
           />

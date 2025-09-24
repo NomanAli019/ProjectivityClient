@@ -16,6 +16,7 @@ import Link from "next/link";
 import Image from "next/image"; // ✅ import Image
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import CreateProjectPopup from "@/app/dashboard/projectpopup/CreateProjectPopUp"; // ✅ import popup
 
 type Props = {
   isOpen: boolean;
@@ -35,6 +36,9 @@ export default function Sidebar({ isOpen, onClose }: Props) {
   const router = useRouter();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // ✅ state to control CreateProjectPopup
+  const [showCreatePopup, setShowCreatePopup] = useState(false);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -97,7 +101,10 @@ export default function Sidebar({ isOpen, onClose }: Props) {
         </div>
 
         {/* Create Button */}
-        <button className="flex items-center gap-2 text-sm font-medium bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md mb-6">
+        <button
+          onClick={() => setShowCreatePopup(true)} // ✅ open popup on click
+          className="flex items-center gap-2 text-sm font-medium bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md mb-6"
+        >
           <PlusCircle className="w-4 h-4" />
           Create
         </button>
@@ -187,6 +194,11 @@ export default function Sidebar({ isOpen, onClose }: Props) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create Project Popup */}
+      {showCreatePopup && (
+        <CreateProjectPopup onClose={() => setShowCreatePopup(false)} />
       )}
     </>
   );
