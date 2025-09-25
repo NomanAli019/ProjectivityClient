@@ -175,7 +175,6 @@ export default function AdTaskEmp() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6">
         <Header
-    
           onMenuClick={() => setSidebarOpen(true)}
         />
 
@@ -205,9 +204,9 @@ export default function AdTaskEmp() {
           {/* Horizontal Scrollable Employees Columns */}
           <div className="overflow-x-auto">
             <div className="flex space-x-6 min-w-max">
-              {selectedProjectData?.employees.map((emp) => (
+              {selectedProjectData?.employees.map((emp, empIndex) => (
                 <div
-                  key={emp.id}
+                  key={`${emp.id}-${empIndex}`} // fixed: ensure unique key even if emp.id duplicates
                   className="w-96 flex-shrink-0 bg-gray-50 rounded-xl shadow p-4 flex flex-col"
                 >
                   {/* Assignee Header */}
@@ -221,7 +220,7 @@ export default function AdTaskEmp() {
                           addingTaskFor === emp.id ? null : emp.id
                         )
                       }
-                      className="p-1 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white"
+                      className="p-1 rounded-full BG-cyan-500 hover:bg-cyan-600 text-white"
                     >
                       <Plus size={14} />
                     </button>
